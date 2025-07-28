@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopSort - E-commerce with Smart Sorting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.3)); }
+            to { filter: drop-shadow(0 0 20px rgba(118, 75, 162, 0.5)); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .control-group:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        select, button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            background: #fff;
+            border: 2px solid #ddd;
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .product-card:hover::before {
+            left: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .product-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .product-category {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .category-men { background: linear-gradient(45deg, #4facfe, #00f2fe); color: white; }
+        .category-women { background: linear-gradient(45deg, #fa709a, #fee140); color: white; }
+        .category-kids { background: linear-gradient(45deg, #a8edea, #fed6e3); color: #333; }
+
+        .product-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .product-quantity {
+            background: #f0f0f0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            margin: 50px 0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .sort-info {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ShopSort</h1>
+            <p class="subtitle">E-commerce with Advanced Divide & Conquer Sorting</p>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="category">Category:</label>
+                    <select id="category">
+                        <option value="all">All Categories</option>
+                        <option value="men">Men</option>
+                        <option value="women">Women</option>
+                        <option value="kids">Kids</option>
+                    </select>
+                </div>
+                <div class="sort-info" id="sortInfo" style="display: none;">
+            <strong>Sorting Algorithm:</strong> <span id="algorithmInfo"></span><br>
+            <strong>Time Complexity:</strong> <span id="timeComplexity"></span><br>
+            <strong>Operations:</strong> <span id="operations"></span>
+        </div>
+                <div class="control-group">
+                    <select id="sortBy">
+                        <option value="name">Name</option>
+                        <option value="price-asc">Price (Low to High)</option>
+                        <option value="price-desc">Price (High to Low)</option>
+                        <option value="quantity-asc">Quantity (Low to High)</option>
+                        <option value="quantity-desc">Quantity (High to Low)</option>
+                    </select>
+                </div>
+                
+                <button onclick="sortProducts()">Apply Sort</button>
+            </div>
+        </header>
+
+        
+        <div class="stats" id="stats"></div>
+        
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <div>Sorting products using Divide & Conquer...</div>
+        </div>
+
+        <div class="products-grid" id="productsGrid"></div>
+    </div>
+
+    <script>
+        // Sample product data with images
+        const products = [
+            // Men's Products
+            { id: 1, name: "Classic Denim Jacket", category: "men", price: 89.99, quantity: 25, image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=300&fit=crop" },
+            { id: 2, name: "Leather Sneakers", category: "men", price: 129.99, quantity: 18, image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop" },
+            { id: 3, name: "Formal White Shirt", category: "men", price: 49.99, quantity: 35, image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&h=300&fit=crop" },
+            { id: 4, name: "Sports Watch", category: "men", price: 199.99, quantity: 12, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop" },
+            { id: 5, name: "Casual Chinos", category: "men", price: 69.99, quantity: 22, image: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&h=300&fit=crop" },
+            
+            // Women's Products
+            { id: 6, name: "Floral Summer Dress", category: "women", price: 79.99, quantity: 28, image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=300&fit=crop" },
+            { id: 7, name: "Designer Handbag", category: "women", price: 159.99, quantity: 15, image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=300&fit=crop" },
+            { id: 8, name: "High Heel Shoes", category: "women", price: 119.99, quantity: 20, image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&h=300&fit=crop" },
+            { id: 9, name: "Silk Scarf", category: "women", price: 39.99, quantity: 45, image: "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=400&h=300&fit=crop" },
+            { id: 10, name: "Pearl Necklace", category: "women", price: 89.99, quantity: 30, image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=300&fit=crop" },
+            
+            // Kids Products
+            { id: 11, name: "Colorful Backpack", category: "kids", price: 34.99, quantity: 40, image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop" },
+            { id: 12, name: "Cartoon T-Shirt", category: "kids", price: 19.99, quantity: 55, image: "https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=400&h=300&fit=crop" },
+            { id: 13, name: "Light-Up Sneakers", category: "kids", price: 59.99, quantity: 32, image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=300&fit=crop" },
+            { id: 14, name: "Plush Toy Bear", category: "kids", price: 24.99, quantity: 60, image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop" },
+            { id: 15, name: "Educational Puzzle", category: "kids", price: 29.99, quantity: 38, image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=400&h=300&fit=crop" },
+            
+            // Additional products for better sorting demonstration
+            { id: 16, name: "Premium Wool Coat", category: "men", price: 299.99, quantity: 8, image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=300&fit=crop" },
+            { id: 17, name: "Vintage Sunglasses", category: "women", price: 149.99, quantity: 17, image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=300&fit=crop" },
+            { id: 18, name: "Building Blocks Set", category: "kids", price: 44.99, quantity: 25, image: "https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=400&h=300&fit=crop" },
+        ];
+
+        let currentProducts = [...products];
+        let operationCount = 0;
+
+        // Divide and Conquer Merge Sort Implementation
+        function mergeSort(arr, compareFunction) {
+            operationCount = 0;
+            return mergeSortHelper(arr, compareFunction);
+        }
+
+        function mergeSortHelper(arr, compareFunction) {
+            if (arr.length <= 1) {
+                return arr;
+            }
+
+            const mid = Math.floor(arr.length / 2);
+            const left = arr.slice(0, mid);
+            const right = arr.slice(mid);
+
+            operationCount++;
+
+            return merge(
+                mergeSortHelper(left, compareFunction),
+                mergeSortHelper(right, compareFunction),
+                compareFunction
+            );
+        }
+
+        function merge(left, right, compareFunction) {
+            let result = [];
+            let leftIndex = 0;
+            let rightIndex = 0;
+
+            while (leftIndex < left.length && rightIndex < right.length) {
+                operationCount++;
+                if (compareFunction(left[leftIndex], right[rightIndex]) <= 0) {
+                    result.push(left[leftIndex]);
+                    leftIndex++;
+                } else {
+                    result.push(right[rightIndex]);
+                    rightIndex++;
+                }
+            }
+
+            return result.concat(left.slice(leftIndex)).concat(right.slice(rightIndex));
+        }
+
+        // Comparison functions for different sort criteria
+        const compareFunctions = {
+            'name': (a, b) => a.name.localeCompare(b.name),
+            'price-asc': (a, b) => a.price - b.price,
+            'price-desc': (a, b) => b.price - a.price,
+            'quantity-asc': (a, b) => a.quantity - b.quantity,
+            'quantity-desc': (a, b) => b.quantity - a.quantity
+        };
+
+        function filterProducts() {
+            const category = document.getElementById('category').value;
+            if (category === 'all') {
+                return [...products];
+            }
+            return products.filter(product => product.category === category);
+        }
+
+        function sortProducts() {
+            const loading = document.getElementById('loading');
+            const sortInfo = document.getElementById('sortInfo');
+            const sortBy = document.getElementById('sortBy').value;
+            
+            loading.style.display = 'block';
+            sortInfo.style.display = 'none';
+            
+            setTimeout(() => {
+                const filteredProducts = filterProducts();
+                const compareFunction = compareFunctions[sortBy];
+                
+                currentProducts = mergeSort(filteredProducts, compareFunction);
+                
+                // Update sort information
+                document.getElementById('algorithmInfo').textContent = 'Divide & Conquer Merge Sort';
+                document.getElementById('timeComplexity').textContent = 'O(n log n)';
+                document.getElementById('operations').textContent = `${operationCount} operations`;
+                
+                loading.style.display = 'none';
+                sortInfo.style.display = 'block';
+                
+                displayProducts();
+            }, 800); // Simulate processing time
+        }
+
+        function displayProducts() {
+            const grid = document.getElementById('productsGrid');
+            const stats = document.getElementById('stats');
+            
+            stats.textContent = `Showing ${currentProducts.length} products`;
+            
+            grid.innerHTML = currentProducts.map(product => `
+                <div class="product-card">
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <h3 class="product-name">${product.name}</h3>
+                    <span class="product-category category-${product.category}">${product.category}</span>
+                    <div class="product-details">
+                        <span class="product-price">$${product.price.toFixed(2)}</span>
+                        <span class="product-quantity">${product.quantity} in stock</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Event listeners
+        document.getElementById('category').addEventListener('change', sortProducts);
+        document.getElementById('sortBy').addEventListener('change', sortProducts);
+
+        // Initial load
+        sortProducts();
+    </script>
+</body>
+</html>
